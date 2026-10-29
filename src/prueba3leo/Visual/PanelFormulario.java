@@ -1,12 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package prueba3leo.Visual;
 import prueba3leo.Modelo.Empleado;
 import prueba3leo.Modelo.EmpleadoAdministrativo;
 import prueba3leo.Modelo.EmpleadoPorHoras;
-
 
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
@@ -43,13 +38,11 @@ public class PanelFormulario extends JPanel {
         c.anchor = GridBagConstraints.WEST;
         c.fill = GridBagConstraints.HORIZONTAL;
 
-        // Fila 0: etiquetas, Fila 1: campos
         agregar(new JLabel("Código"), txtCodigo, 0, c);
         agregar(new JLabel("Nombre"), txtNombre, 1, c);
         agregar(new JLabel("Tipo"), cmbTipo, 2, c);
         agregar(new JLabel("Salario base"), txtSalarioBase, 3, c);
 
-        // Fila 2: etiquetas, Fila 3: campos específicos del tipo
         c.gridy = 2; c.gridx = 0; add(lblEspecial1, c);
         c.gridy = 3; c.gridx = 0; add(txtEspecial1, c);
         c.gridy = 2; c.gridx = 1; add(lblEspecial2, c);
@@ -78,7 +71,6 @@ public class PanelFormulario extends JPanel {
         }
     }
 
-    // ----- Lectura de campos (texto sin procesar; el controlador valida) -----
     public boolean isAdministrativo() { return TIPO_ADMIN.equals(cmbTipo.getSelectedItem()); }
     public String getCodigo()      { return txtCodigo.getText().trim(); }
     public String getNombre()      { return txtNombre.getText().trim(); }

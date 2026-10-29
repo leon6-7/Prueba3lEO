@@ -1,20 +1,18 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package prueba3leo.Modelo;
 
-/**
- *
- * @author Abril
- */
-public class EmpleadoPorHoras extends Empleado{
+public class EmpleadoPorHoras extends Empleado {
     private int horasTrabajadas;
     private double tarifaPorHora;
-    public EmpleadoPorHoras(String codigo, String nombre, double SalarioBase){
-    super(codigo, nombre, SalarioBase);
-    
-    
+
+    public EmpleadoPorHoras(String codigo, String nombre, double salarioBase) {
+        super(codigo, nombre, salarioBase);
+    }
+
+    public EmpleadoPorHoras(String codigo, String nombre, double salarioBase,
+            int horasTrabajadas, double tarifaPorHora) {
+        this(codigo, nombre, salarioBase);
+        setHorasTrabajadas(horasTrabajadas);
+        setTarifaPorHora(tarifaPorHora);
     }
 
     public int getHorasTrabajadas() {
@@ -22,6 +20,9 @@ public class EmpleadoPorHoras extends Empleado{
     }
 
     public void setHorasTrabajadas(int horasTrabajadas) {
+        if (horasTrabajadas < 0) {
+            throw new IllegalArgumentException("Las horas no pueden ser negativas.");
+        }
         this.horasTrabajadas = horasTrabajadas;
     }
 
@@ -30,15 +31,14 @@ public class EmpleadoPorHoras extends Empleado{
     }
 
     public void setTarifaPorHora(double tarifaPorHora) {
+        if (!Double.isFinite(tarifaPorHora) || tarifaPorHora < 0) {
+            throw new IllegalArgumentException("La tarifa no puede ser negativa.");
+        }
         this.tarifaPorHora = tarifaPorHora;
     }
-    
+
     @Override
-    public double calcularSalario(){
-    return SalarioBase+(horasTrabajadas*tarifaPorHora);
-    
+    public double calcularSalario() {
+        return getSalarioBase() + horasTrabajadas * tarifaPorHora;
     }
-    
-    
-    
 }

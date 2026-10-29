@@ -1,26 +1,16 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package prueba3leo.Modelo;
 
-/**
- *
- * @author Abril
- */
-public abstract class Empleado {
-    protected String codigo;
-    protected String nombre;
-    protected double SalarioBase;
-    
-    public Empleado(String codigo, String nombre, double SalarioBase){
-    this.codigo=codigo;
-    this.nombre=nombre;
-    this.SalarioBase=SalarioBase;
-    
+public abstract class Empleado implements Cloneable {
+    private String codigo;
+    private String nombre;
+    private double salarioBase;
+
+    public Empleado(String codigo, String nombre, double salarioBase) {
+        setCodigo(codigo);
+        setNombre(nombre);
+        setSalarioBase(salarioBase);
     }
-    
-    
+
     public abstract double calcularSalario();
 
     public String getCodigo() {
@@ -28,7 +18,10 @@ public abstract class Empleado {
     }
 
     public void setCodigo(String codigo) {
-        this.codigo = codigo;
+        if (codigo == null || codigo.trim().isEmpty()) {
+            throw new IllegalArgumentException("El código es obligatorio.");
+        }
+        this.codigo = codigo.trim();
     }
 
     public String getNombre() {
@@ -36,30 +29,47 @@ public abstract class Empleado {
     }
 
     public void setNombre(String nombre) {
-        this.nombre = nombre;
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre es obligatorio.");
+        }
+        this.nombre = nombre.trim();
     }
 
     public double getSalarioBase() {
-        return SalarioBase;
+        return salarioBase;
     }
 
-    public void setSalarioBase(double SalarioBase) {
-        this.SalarioBase = SalarioBase;
-    }
-    
-    
-    public String  mostrarInfromacion(){
-        return "Codigo"+codigo+" | "+"Nombre: "+nombre+" | "+"SalarioBase: "+SalarioBase+"|";
-    }
-    
-    public String obtenerCategoria(){
-    double sueldo=calcularSalario();
-            switch(sueldo){
-                case sueldo==1000:
-                    
-            
-            }
+    public void setSalarioBase(double salarioBase) {
+        if (!Double.isFinite(salarioBase) || salarioBase < 0) {
+            throw new IllegalArgumentException("El salario base no puede ser negativo.");
         }
-        
-    
+        this.salarioBase = salarioBase;
+    }
+
+    public String mostrarInformacion() {
+        return "Código: " + codigo + "\nNombre: " + nombre
+                + "\nSalario base: "
+                + String.format(java.util.Locale.US, "%.2f", salarioBase);
+    }
+
+    public String obtenerCategoria() {
+        double salario = calcularSalario();
+
+        if (salario < 1000) {
+            return "Inicial";
+        }
+        if (salario < 3000) {
+            return "Intermedio";
+        }
+        return "Superior";
+    }
+
+    @Override
+    public Empleado clone() {
+        try {
+            return (Empleado) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new IllegalStateException("No se pudo clonar el empleado.", e);
+        }
+    }
 }

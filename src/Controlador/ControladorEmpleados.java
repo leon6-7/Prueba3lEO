@@ -1,25 +1,21 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package Controlador;
 
 import prueba3leo.Modelo.Empleado;
 import prueba3leo.Modelo.EmpleadoAdministrativo;
 import prueba3leo.Modelo.EmpleadoPorHoras;
+import prueba3leo.Modelo.GestorEmpleados;
+
 import prueba3leo.Visual.ModeloTablaEmpleados;
 import prueba3leo.Visual.PanelBotones;
 import prueba3leo.Visual.PanelTabla;
 import prueba3leo.Visual.VentanaPrincipal;
 import prueba3leo.Visual.PanelFormulario;
-
+import prueba3leo.Visual.DatoInvalidoException;
+import prueba3leo.Visual.EmpleadoNoEncontradoException;
+import prueba3leo.Visual.CodigoDuplicadoException;
 import javax.swing.JOptionPane;
 import java.util.Locale;
 
-/**
- * Conecta la vista con el modelo. No contiene fórmulas de salario:
- * solo lee los campos, invoca los métodos del modelo y muestra los resultados.
- */
 public class ControladorEmpleados {
 
     private final VentanaPrincipal ventana;
@@ -29,7 +25,6 @@ public class ControladorEmpleados {
     private final GestorEmpleados gestor;
     private final ModeloTablaEmpleados modeloTabla;
 
-    /** Copia creada con "Clonar empleado" que aún no se ha registrado. */
     private Empleado clonPendiente;
 
     public ControladorEmpleados(VentanaPrincipal ventana, GestorEmpleados gestor, ModeloTablaEmpleados modeloTabla) {
@@ -54,9 +49,6 @@ public class ControladorEmpleados {
         botones.getBtnLimpiar().addActionListener(e -> limpiar());
     }
 
-    // =====================================================================
-    // RF-01 / RF-02: Registrar
-    // =====================================================================
     private void registrar() {
         if (clonPendiente != null) {
             aviso("Hay un clon pendiente. Use 'Registrar clon' para guardarlo o 'Limpiar' para descartarlo.");
@@ -73,9 +65,6 @@ public class ControladorEmpleados {
         }
     }
 
-    // =====================================================================
-    // RF-03: Calcular salario (fila seleccionada, o datos actuales del formulario)
-    // =====================================================================
     private void calcularSalario() {
         try {
             Empleado e;
@@ -88,7 +77,7 @@ public class ControladorEmpleados {
                 aviso("Seleccione un solo registro para calcular su salario.");
                 return;
             } else {
-                e = construirDesdeFormulario(); // objeto temporal, no se registra
+                e = construirDesdeFormulario();
                 origen = "de los datos del formulario";
             }
             info("Salario calculado " + origen + ":\n\n"
@@ -100,14 +89,11 @@ public class ControladorEmpleados {
         }
     }
 
-    // =====================================================================
-    // RF-05: Buscar por código
-    // =====================================================================
     private void buscar() {
         String codigo = JOptionPane.showInputDialog(ventana, "Ingrese el código del empleado:",
                 "Buscar empleado", JOptionPane.QUESTION_MESSAGE);
         if (codigo == null) {
-            return; // canceló
+            return;
         }
         codigo = codigo.trim();
         if (codigo.isEmpty()) {
@@ -126,9 +112,6 @@ public class ControladorEmpleados {
         }
     }
 
-    // =====================================================================
-    // RF-07: Clonar (CT-06: sin selección muestra mensaje y no genera registro)
-    // =====================================================================
     private void clonar() {
         int[] filas = tabla.getFilasSeleccionadas();
         if (filas.length == 0) {
@@ -140,20 +123,16 @@ public class ControladorEmpleados {
             return;
         }
         Empleado original = tabla.getEmpleadoEn(filas[0]);
-        clonPendiente = gestor.clonar(original);   // mismo tipo concreto, referencia distinta
+        clonPendiente = gestor.clonar(original);
 
         formulario.cargar(clonPendiente);
-        formulario.setCodigo(sugerirCodigo(original.getCodigo())); // código nuevo (editable)
-        formulario.setTipoEditable(false);                         // el clon conserva su tipo
+        formulario.setCodigo(sugerirCodigo(original.getCodigo()));
+        formulario.setTipoEditable(false);
         botones.getBtnRegistrarClon().setEnabled(true);
 
         info("Clon preparado. Puede editar sus datos y luego pulsar 'Registrar clon'.\n"
                 + "El código debe ser único.");
     }
-
-    // =====================================================================
-    // RF-08: Registrar la copia con código único
-    // =====================================================================
     private void registrarClon() {
         if (clonPendiente == null) {
             aviso("No hay ningún clon pendiente. Seleccione un empleado y pulse 'Clonar empleado'.");
@@ -164,7 +143,6 @@ public class ControladorEmpleados {
             String nombre = requerido(formulario.getNombre(), "Nombre");
             double base = leerDouble(formulario.getSalarioBase(), "Salario base");
 
-            // Se editan los atributos del CLON; el original no se ve afectado (CT-03, CT-04)
             clonPendiente.setCodigo(codigo);
             clonPendiente.setNombre(nombre);
             clonPendiente.setSalarioBase(base);
@@ -172,7 +150,9 @@ public class ControladorEmpleados {
             if (clonPendiente instanceof EmpleadoAdministrativo) {
                 EmpleadoAdministrativo a = (EmpleadoAdministrativo) clonPendiente;
                 a.setBonificacion(leerDouble(formulario.getEspecial1(), "Bonificación"));
-                a.setDescuento(leerDouble(formulario.getEspecial2(), "Descuento"));
+                double descuento = leerDouble(formulario.getEspecial2(), "Descuento");
+                if (descuento > 100) throw new DatoInvalidoException("El descuento debe estar entre 0 y 100.");
+                a.setDescuento(descuento);
             } else if (clonPendiente instanceof EmpleadoPorHoras) {
                 EmpleadoPorHoras h = (EmpleadoPorHoras) clonPendiente;
                 h.setHorasTrabajadas(leerEntero(formulario.getEspecial1(), "Horas trabajadas"));
@@ -187,13 +167,10 @@ public class ControladorEmpleados {
             reiniciarEstadoClon();
             info("Clon registrado como nuevo empleado.\n\n" + detalle(registrado));
         } catch (DatoInvalidoException | CodigoDuplicadoException ex) {
-            error(ex.getMessage()); // el clon sigue pendiente para corregirlo
+            error(ex.getMessage());
         }
     }
 
-    // =====================================================================
-    // RF-09: Comparar referencias y atributos
-    // =====================================================================
     private void comparar() {
         int[] filas = tabla.getFilasSeleccionadas();
         Empleado a;
@@ -204,12 +181,12 @@ public class ControladorEmpleados {
             a = tabla.getEmpleadoEn(filas[0]);
             b = tabla.getEmpleadoEn(filas[1]);
         } else if (filas.length == 1 && clonPendiente != null) {
-            a = tabla.getEmpleadoEn(filas[0]);   // original
-            b = clonPendiente;                   // clon aún sin registrar
+            a = tabla.getEmpleadoEn(filas[0]);
+            b = clonPendiente;
             nota = "(Comparando el registro seleccionado contra el clon pendiente)\n\n";
         } else if (filas.length == 1) {
             a = tabla.getEmpleadoEn(filas[0]);
-            b = a;                               // dos variables, un solo objeto
+            b = a;
             nota = "(Solo hay un registro seleccionado: se compara consigo mismo)\n\n";
         } else {
             aviso("Seleccione dos registros (Ctrl + clic) para compararlos.");
@@ -226,9 +203,6 @@ public class ControladorEmpleados {
                 + "\n\n--- Objeto B ---\n" + detalle(b));
     }
 
-    // =====================================================================
-    // RF-06: Resumen
-    // =====================================================================
     private void salarioMaximo() {
         if (gestor.getEmpleados().isEmpty()) {
             aviso("No hay empleados registrados.");
@@ -248,9 +222,6 @@ public class ControladorEmpleados {
                 + fmt(gestor.promedio()));
     }
 
-    // =====================================================================
-    // RF-10: Limpiar (no borra la colección)
-    // =====================================================================
     private void limpiar() {
         formulario.limpiar();
         reiniciarEstadoClon();
@@ -263,9 +234,6 @@ public class ControladorEmpleados {
         formulario.setTipoEditable(true);
     }
 
-    // =====================================================================
-    // Lectura y validación del formulario
-    // =====================================================================
     private Empleado construirDesdeFormulario() throws DatoInvalidoException {
         String codigo = requerido(formulario.getCodigo(), "Código");
         String nombre = requerido(formulario.getNombre(), "Nombre");
@@ -274,6 +242,7 @@ public class ControladorEmpleados {
         if (formulario.isAdministrativo()) {
             double bonificacion = leerDouble(formulario.getEspecial1(), "Bonificación");
             double descuento = leerDouble(formulario.getEspecial2(), "Descuento");
+            if (descuento > 100) throw new DatoInvalidoException("El descuento debe estar entre 0 y 100.");
             return new EmpleadoAdministrativo(codigo, nombre, base, bonificacion, descuento);
         }
         int horas = leerEntero(formulario.getEspecial1(), "Horas trabajadas");
@@ -292,28 +261,26 @@ public class ControladorEmpleados {
         requerido(texto, campo);
         try {
             double v = Double.parseDouble(texto.trim());
-            if (Double.isNaN(v) || Double.isInfinite(v)) {
+            if (Double.isNaN(v) || Double.isInfinite(v) || v < 0) {
                 throw new NumberFormatException();
             }
             return v;
         } catch (NumberFormatException ex) {
-            throw new DatoInvalidoException("El campo '" + campo + "' debe ser un número válido (ej. 1500.50).");
+            throw new DatoInvalidoException("El campo '" + campo + "' debe ser un número válido y no negativo (ej. 1500.50).");
         }
     }
 
     private int leerEntero(String texto, String campo) throws DatoInvalidoException {
         requerido(texto, campo);
         try {
-            return Integer.parseInt(texto.trim());
+            int valor = Integer.parseInt(texto.trim());
+            if (valor < 0) throw new NumberFormatException();
+            return valor;
         } catch (NumberFormatException ex) {
             throw new DatoInvalidoException("El campo '" + campo + "' debe ser un número entero.");
         }
     }
 
-    // =====================================================================
-    // Utilidades de presentación
-    // =====================================================================
-    /** Propone un código libre para el clon: COD-COPIA, COD-COPIA2, ... */
     private String sugerirCodigo(String base) {
         String candidato = base + "-COPIA";
         int n = 2;
@@ -323,7 +290,6 @@ public class ControladorEmpleados {
         return candidato;
     }
 
-    /** Texto con los datos del empleado; los cálculos los hace el modelo. */
     private String detalle(Empleado e) {
         StringBuilder sb = new StringBuilder();
         sb.append("Tipo: ").append(ModeloTablaEmpleados.tipoDe(e)).append("\n");
@@ -342,7 +308,6 @@ public class ControladorEmpleados {
         return sb.toString();
     }
 
-    /** Equivalencia de atributos (ignora el código, que es único por registro). */
     private boolean equivalentes(Empleado a, Empleado b) {
         if (a.getClass() != b.getClass()) {
             return false;

@@ -1,16 +1,18 @@
-
 package prueba3leo.Modelo;
 
-/**
- *
- * @author Abril
- */
-public class EmpleadoAdministrativo extends Empleado{
+public class EmpleadoAdministrativo extends Empleado {
     private double bonificacion;
     private double descuento;
-    public EmpleadoAdministrativo(String codigo, String nombre, double SalarioBase){
-    super(codigo, nombre, SalarioBase);
-    
+
+    public EmpleadoAdministrativo(String codigo, String nombre, double salarioBase) {
+        super(codigo, nombre, salarioBase);
+    }
+
+    public EmpleadoAdministrativo(String codigo, String nombre, double salarioBase,
+            double bonificacion, double descuento) {
+        this(codigo, nombre, salarioBase);
+        setBonificacion(bonificacion);
+        setDescuento(descuento);
     }
 
     public double getBonificacion() {
@@ -18,9 +20,10 @@ public class EmpleadoAdministrativo extends Empleado{
     }
 
     public void setBonificacion(double bonificacion) {
-        if(bonificacion>0){
-        this.bonificacion = bonificacion;}
-        
+        if (!Double.isFinite(bonificacion) || bonificacion < 0) {
+            throw new IllegalArgumentException("La bonificación no puede ser negativa.");
+        }
+        this.bonificacion = bonificacion;
     }
 
     public double getDescuento() {
@@ -28,13 +31,14 @@ public class EmpleadoAdministrativo extends Empleado{
     }
 
     public void setDescuento(double descuento) {
-        if(descuento>0){
-        this.descuento = descuento;}
+        if (!Double.isFinite(descuento) || descuento < 0 || descuento > 100) {
+            throw new IllegalArgumentException("El descuento debe estar entre 0 y 100.");
+        }
+        this.descuento = descuento;
     }
-    
+
     @Override
-    public double calcularSalario(){
-    return (this.SalarioBase+bonificacion)*((1-descuento)/100);
-    
+    public double calcularSalario() {
+        return (getSalarioBase() + bonificacion) * (1 - descuento / 100.0);
     }
 }

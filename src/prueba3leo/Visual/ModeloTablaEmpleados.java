@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package prueba3leo.Visual;
 import prueba3leo.Modelo.Empleado;
 import prueba3leo.Modelo.EmpleadoAdministrativo;
@@ -42,7 +38,7 @@ public class ModeloTablaEmpleados extends AbstractTableModel {
             case 0: return e.getCodigo();
             case 1: return e.getNombre();
             case 2: return tipoDe(e);
-            // calcularSalario() se resuelve en tiempo de ejecución según el tipo real (polimorfismo)
+
             case 3: return String.format(Locale.US, "%,.2f", e.calcularSalario());
             case 4: return e.obtenerCategoria();
             default: return "";

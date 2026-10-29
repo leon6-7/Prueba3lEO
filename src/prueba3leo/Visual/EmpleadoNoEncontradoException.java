@@ -1,13 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package prueba3leo.Visual;
 
-/**
- *
- * @author Abril
- */
-public class EmpleadoNoEncontradoException {
-    
+public class EmpleadoNoEncontradoException extends Exception {
+    public EmpleadoNoEncontradoException(String codigo) {
+        super("No se encontró ningún empleado con el código '" + codigo + "'.");
+    }
 }

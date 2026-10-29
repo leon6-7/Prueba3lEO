@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package prueba3leo.Visual;
 
 import javax.swing.BorderFactory;
@@ -37,7 +33,7 @@ public class PanelBotones extends JPanel {
         add(btnSalarioMaximo);
         add(btnPromedio);
         add(btnLimpiar);
-        add(new JLabel()); 
+        add(new JLabel());
 
         btnRegistrarClon.setEnabled(false);
     }
